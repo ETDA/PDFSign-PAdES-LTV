@@ -1,0 +1,45 @@
+{
+    "type": "e-Transcript",
+    "issuer": {
+        "name": "มหาวิทยาลัยนวัตกรรมไทย",
+        "nameEn": "Innovation Thai University",
+        "taxId": "0105560000001",
+        "address": "123 ถนนเพลินจิต กรุงเทพฯ 10330"
+    },
+    "student": {
+        "studentId": "640105001",
+        "nameTh": "นายสมชาย ใจดี",
+        "nameEn": "Mr. Somchai Jaidee",
+        "birthDate": "2002-05-20",
+        "facultyTh": "คณะวิศวกรรมศาสตร์",
+        "facultyEn": "Faculty of Engineering",
+        "majorTh": "วิศวกรรมคอมพิวเตอร์",
+        "majorEn": "Computer Engineering"
+    },
+    "academicRecord": {
+        "degreeTh": "วิศวกรรมศาสตรบัณฑิต",
+        "degreeEn": "Bachelor of Engineering",
+        "gpa": "3.85",
+        "graduationDate": "2025-05-15",
+        "courses": [
+            {
+                "code": "CP101",
+                "name": "Computer Programming",
+                "credit": 3,
+                "grade": "A"
+            },
+            {
+                "code": "CP102",
+                "name": "Data Structures",
+                "credit": 3,
+                "grade": "A"
+            },
+            {
+                "code": "CP201",
+                "name": "Algorithms",
+                "credit": 3,
+                "grade": "B+"
+            }
+        ]
+    }
+}

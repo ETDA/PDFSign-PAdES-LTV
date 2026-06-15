@@ -1,0 +1,20 @@
+{
+    "type": "e-Receipt",
+    "document": {
+        "number": "RE202602001",
+        "issueDate": "2026-02-03T11:00:00Z"
+    },
+    "seller": {
+        "name": "บริษัท ค้าปลีกไทย จำกัด",
+        "taxId": "0105555555555",
+        "address": "1 ถ.สวนสยาม กรุงเทพฯ"
+    },
+    "buyer": {
+        "name": "นายสมชาย ใจดี",
+        "address": "789 ถ.รัชดาภิเษก กรุงเทพฯ"
+    },
+    "payment": {
+        "method": "Transfer",
+        "amount": 500.00
+    }
+}

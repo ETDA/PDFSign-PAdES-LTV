@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid PDF/A-3 Playground | ETDA Standards</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>ETDA Development Guideline : ขมธอ.11 - ELECTRONIC CERTIFICATE</strong></li>
+        </ul>
+        <ul>
+            <li><a href="javascript:void(0)" onclick="switchView('pdf')" id="nav-pdf" class="active">ระบบออกหนังสือรับรอง</a></li>
+            <li><a href="javascript:void(0)" onclick="switchView('masking')" id="nav-masking">ระบบ Data Masking</a></li>
+            <li><a href="javascript:void(0)" id="docLink" role="button" class="secondary outline">Document</a></li>
+            <li><a href="https://www.etda.or.th" role="button" class="outline">ETDA Website</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- View 1: PDF Generator -->
+        <div id="pdf-view">
+            <header class="hero">
+                <h1>ระบบทดลองออกหนังสือรับรองอิเล็กทรอนิกส์</h1>
+                <p>เครื่องมือสำหรับนักพัฒนาในการทดสอบสร้างเอกสารตามมาตรฐาน ETDA (Hybrid PDF/A-3)</p>
+            </header>
+
+        <!-- 1) เลือกประเภทเอกสาร & Input Data -->
+        <section class="tool-section">
+            <h3>1. เลือกเอกสารตัวอย่าง</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem;">
+                เลือกประเภทเอกสารที่ต้องการทดสอบ ระบบจะโหลดชุดข้อมูลตัวอย่าง (JSON) ที่สอดคล้องตามโครงสร้างมาตรฐาน ETDA
+                เพื่อใช้เป็นสารตั้งต้นในการสร้างเอกสารอิเล็กทรอนิกส์
+            </p>
+            <div class="grid">
+                <div>
+                    <label for="docType">เลือกประเภทเอกสาร:</label>
+                    <select id="docType" onchange="loadSampleData()">
+                        <option value="transcript">ใบรับรองผลการเรียน (Academic Transcript)</option>
+                        <option value="invoice">ใบกำกับภาษี (Electronic Tax Invoice)</option>
+                    </select>
+                </div>
+                <div>
+                    <!-- Empty space for grid alignment if needed, or we can use full width for textarea below -->
+                </div>
+            </div>
+
+            <div style="margin-top: 0.8rem;">
+                <label>Input Data (JSON)</label>
+                <textarea id="inputData" rows="12" placeholder="กรอกข้อมูลดิบที่นี่..." style="width: 100%;"></textarea>
+            </div>
+        </section>
+
+        <!-- 2) สร้างและลงนาม PDF -->
+        <section class="action-area tool-section">
+            <h3>2. สร้างและลงนาม PDF</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem; text-align: center;">
+                เลือกประเภทการสร้างไฟล์ตามความต้องการใช้งานมาตรฐาน ETDA-STD-11-2569
+            </p>
+            <div class="grid" style="max-width: 1000px; margin: 0 auto; gap: 1rem;">
+                <button onclick="generatePDF('signed')" class="secondary outline" style="font-size: 0.85rem;">PDF + Attachment + Signing</button>
+                <button onclick="generatePDF('ltv')" class="secondary" style="font-size: 0.85rem;">PDF + Attachment + Signing + LTV</button>
+                <button onclick="generatePDF('full')" style="font-size: 0.85rem;">PDF + Attachment + Signing + LTV + QR Code</button>
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <progress id="loader" style="display:none;"></progress>
+            </div>
+        </section>
+
+        <!-- 3) ผลลัพธ์เอกสาร (Generated PDF) -->
+        <section id="resultArea" style="display:none;">
+            <div class="tool-section">
+                <h3>3. ผลลัพธ์เอกสาร (Generated PDF)</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem;">
+                    ตรวจสอบความถูกต้องของไฟล์ PDF ที่สร้างขึ้น ทั้งในรูปแบบที่มนุษย์อ่านได้ (Visual)
+                    และดูโครงสร้างข้อมูล (Payload content) ที่ถูกบรรจุอยู่ภายในไฟล์ (Machine-readable)
+                </p>
+                <div class="grid" style="grid-template-columns: 3fr 2fr; gap: 2rem;">
+                    <!-- PDF Preview -->
+                    <div>
+                        <iframe id="pdfPreview" width="100%" height="650px"></iframe>
+                    </div>
+
+                    <!-- Right Column: Details & Attachments -->
+                    <div>
+                        <article class="result-card">
+                            <header>รายละเอียดไส้ใน (Embedded Files)</header>
+                            <div style="padding: 0.8rem;">
+                                <div style="font-size: 0.9rem;">
+                                    <strong>Format:</strong> <span style="color: #4a5568;">PDF/A-3 (ISO 19005-3)</span>
+                                </div>
+                                <hr style="margin: 0.5rem 0;">
+
+                                <strong style="font-size: 0.9rem;">Attachments:</strong>
+                                <ul class="attachment-list" style="margin-top: 0.3rem;">
+                                    <li><code id="attachmentJson">document.json</code> (Relationship: Source)</li>
+                                    <li><code id="attachmentXml">document.xml</code> (Relationship: Data)</li>
+                                </ul>
+
+                                <div style="font-size: 0.9rem;">
+                                    <strong>Signature:</strong> <span
+                                        style="color: #059669; font-weight: bold;">PAdES-LTV (RSA)</span>
+                                </div>
+
+                                <h6
+                                    style="margin-top: 1rem; margin-bottom: 0.4rem; font-size: 0.8rem; color: var(--primary);">
+                                    Technical Workflow Log:</h6>
+                                <ul id="workflowList">
+                                    <!-- Workflow steps injected here -->
+                                </ul>
+
+                                <div class="secondary-buttons">
+                                    <a id="downloadBtn" href="#" download="certificate.pdf" role="button">ดาวน์โหลดไฟล์
+                                        PDF</a>
+                                </div>
+                                <div class="secondary-buttons">
+                                    <a href="/api/download-cert" role="button" class="outline">โหลด Root Cert (.crt)</a>
+                                </div>
+                                <p style="font-size: 0.75rem; margin-top: 1rem; color: #718096; line-height: 1.4;">
+                                    *เพื่อให้ Adobe Reader ขึ้นสีเขียว: ให้โหลด Root Cert และสั่ง <strong>Trusted
+                                        Certificate</strong> ในโปรแกรม Adobe
+                                </p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- Logic Preview side-by-side below PDF result -->
+                <div class="logic-preview-stack" style="margin-top: 1.5rem;">
+                    <div style="margin-bottom: 2rem;">
+                        <div class="logic-header"
+                            style="background: var(--primary); color: white; padding: 0.4rem 1rem; border-radius: 8px 8px 0 0; font-size: 0.85rem; font-weight: bold;">
+                            JSON (Semantic)
+                        </div>
+                        <pre
+                            style="margin: 0; border-radius: 0 0 8px 8px; max-height: 500px;"><code id="schemaPreviewJson" class="language-json"></code></pre>
+                    </div>
+                    <div>
+                        <div class="logic-header"
+                            style="background: #4a5568; color: white; padding: 0.4rem 1rem; border-radius: 8px 8px 0 0; font-size: 0.85rem; font-weight: bold;">
+                            XML (Machine Readable)
+                        </div>
+                        <pre
+                            style="margin: 0; border-radius: 0 0 8px 8px; max-height: 500px;"><code id="schemaPreviewXml" class="language-xml"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4) ตรวจสอบความน่าเชื่อถือ (Simulate Trust Verification) -->
+        <section id="verificationSection" style="display:none;" class="tool-section">
+            <div class="section-header-badge">Trust Layer</div>
+            <h3>4. ตรวจสอบความน่าเชื่อถือ (Identity Verification)</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem;">
+                จำลองฝั่งผู้รับเอกสาร: ตรวจสอบความถูกต้องของลายเซ็นดิจิทัล (PAdES) และสถานะ LTV เพื่อยืนยันตัวตนผู้ส่ง
+                (Proof of Origin) และความครบถ้วนของข้อมูล (Integrity)
+            </p>
+
+            <div class="grid">
+                <!-- Box 1: PDF Verification -->
+                <div>
+                    <article class="result-card">
+                        <header style="background: #2d3748;">1) ตรวจสอบไฟล์ PDF (Online/Full)</header>
+                        <div style="padding: 1rem;">
+                            <p style="font-size: 0.75rem; color: #718096;">ตรวจสอบความครบถ้วนของไฟล์ PDF และสถานะ LTV
+                                ผ่าน OCSP/CRL</p>
+                            <div style="text-align: center; margin-bottom: 1rem;">
+                                <button id="verifyBtn" class="secondary outline" onclick="verifySignature()">ตรวจสอบ
+                                    PDF</button>
+                            </div>
+
+                            <div id="verificationResult" style="display:none;">
+                                <div id="sigStatusBox"
+                                    style="padding: 0.6rem; border-radius: 8px; margin-bottom: 0.8rem; text-align: center; font-size: 0.9rem;">
+                                    <strong id="sigStatusTitle"></strong>
+                                </div>
+                                <table style="font-size: 0.75rem; width: 100%; margin-bottom: 0.5rem;">
+                                    <tr>
+                                        <td><strong>Signer:</strong></td>
+                                        <td id="resSigner" style="text-align: right;">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Time:</strong></td>
+                                        <td id="resTime" style="text-align: right;">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Integrity:</strong></td>
+                                        <td id="resIntegrity" style="text-align: right;">-</td>
+                                    </tr>
+                                </table>
+                                <h6 style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.3rem;">
+                                    Verification Log:</h6>
+                                <ul id="verifyLogList" style="font-size: 0.65rem; padding-left: 1rem; color: #718096;">
+                                </ul>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Box 2: QR Verification -->
+                <div>
+                    <article class="result-card">
+                        <header style="background: #012B54;">2) ตรวจสอบ QR Code (Offline/Compact)</header>
+                        <div style="padding: 1rem;">
+                            <p style="font-size: 0.75rem; color: #718096;">
+                                จำลองการสแกนด้วยแอปมือถือเพื่อตรวจสอบตราประทับดิจิทัลแบบไม่ต้องต่อเน็ต</p>
+                            <div style="text-align: center; margin-bottom: 1rem;">
+                                <button id="verifyQrBtn" class="primary outline" onclick="verifyQrCode()">ตรวจสอบ QR
+                                    Code</button>
+                            </div>
+
+                            <div id="qrVerificationResult" style="display:none;">
+                                <div id="qrStatusBox"
+                                    style="padding: 0.6rem; border-radius: 8px; margin-bottom: 0.8rem; text-align: center; font-size: 0.9rem;">
+                                    <strong id="qrStatusTitle"></strong>
+                                </div>
+                                <table style="font-size: 0.75rem; width: 100%; margin-bottom: 0.5rem;">
+                                    <tr>
+                                        <td><strong>Issuer:</strong></td>
+                                        <td id="qrResIssuer" style="text-align: right;">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Subject:</strong></td>
+                                        <td id="qrResSubject" style="text-align: right;">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Exp Date:</strong></td>
+                                        <td id="qrResExp" style="text-align: right;">-</td>
+                                    </tr>
+                                </table>
+                                <h6 style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.3rem;">Workflow
+                                    Log (Offline Learn):</h6>
+                                <ul id="qrVerifyLogList"
+                                    style="font-size: 0.65rem; padding-left: 1rem; color: #718096;"></ul>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5) สกัดข้อมูลนำไปใช้งาน (Simulate Data Extraction) -->
+        <section id="extractionSection" style="display:none;" class="tool-section">
+            <div class="section-header-badge" style="background: var(--primary);">Data Layer</div>
+            <h3>5. สกัดข้อมูลนำไปใช้งาน (Data Extraction)</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem;">
+                สกัดข้อมูลที่เป็นโครงสร้าง (Machine-readable) ออกจากไฟล์ PDF เพื่อนำไปประมวลผลต่อในระบบสารสนเทศอัตโนมัติ
+                (Automated Processing) โดยไม่ต้องใช้คนกรอกตามมาตรฐาน PDF/A-3
+            </p>
+
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <button id="extractBtn" class="primary outline" onclick="extractPayload()">สกัดข้อมูลจากไฟล์
+                    PDF</button>
+            </div>
+
+            <div id="extractionResult" style="display:none;">
+                <article class="result-card">
+                    <header>ข้อมูลที่สกัดได้ (Extracted Payload)</header>
+                    <div style="padding: 1rem;">
+                        <!-- Stacked JSON and XML outputs for full width -->
+                        <div class="extraction-display-stack">
+                            <div style="margin-bottom: 2rem;">
+                                <div
+                                    style="font-size: 0.85rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                                    <span
+                                        style="background: var(--primary); color: white; padding: 0.1rem 0.6rem; border-radius: 4px; font-size: 0.7rem;">Extracted</span>
+                                    JSON (Semantic Data)
+                                </div>
+                                <pre
+                                    style="margin: 0; border-radius: 8px; max-height: 600px;"><code id="extractedJsonDisplay" class="language-json"></code></pre>
+                            </div>
+
+                            <div>
+                                <div
+                                    style="font-size: 0.85rem; font-weight: bold; margin-bottom: 0.5rem; color: #4a5568; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span
+                                        style="background: #4a5568; color: white; padding: 0.1rem 0.6rem; border-radius: 4px; font-size: 0.7rem;">Extracted</span>
+                                    XML (Machine Readable)
+                                </div>
+                                <pre
+                                    style="margin: 0; border-radius: 8px; max-height: 600px;"><code id="extractedXmlDisplay" class="language-xml"></code></pre>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1rem;">
+                            <h6 style="font-size: 0.75rem; color: var(--primary); margin-bottom: 0.5rem;">Extraction
+                                Log:</h6>
+                            <ul id="extractLogList" style="font-size: 0.7rem; padding-left: 1.2rem; color: #718096;">
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        </div> <!-- End #pdf-view -->
+
+        <!-- View 2: Data Masking -->
+        <div id="masking-view" style="display:none;">
+            <header class="hero">
+                <h1 style="color: #e53e3e;">ระบบทดลองการทำ Data Masking</h1>
+                <p>เครื่องมือสำหรับทดลองการปกปิดข้อมูลส่วนบุคคลตามมาตรฐานความปลอดภัยข้อมูล (Data Privacy)</p>
+            </header>
+
+            <section class="tool-section">
+                <div class="section-header-badge" style="background: #e53e3e;">Privacy Layer</div>
+                <h3>การทำ Data Masking (Data Privacy)</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.2rem;">
+                    ทดลองฟังก์ชันการปกปิดข้อมูล (Masking) เพื่อความปลอดภัยและความเป็นส่วนตัวของข้อมูลส่วนบุคคล (PDPA) 
+                    โดยสามารถกำหนดการหอหุ้มด้วยตัวอักษร * ได้ตามต้องการ
+                </p>
+
+            <div class="grid">
+                <!-- Input Controls -->
+                <div style="flex: 1;">
+                    <label for="maskInput">ข้อมูลที่ต้องการทำ Masking:</label>
+                    <input type="text" id="maskInput" placeholder="เช่น 1234567890123" oninput="applyDataMasking()">
+                    
+                    <div class="grid">
+                        <div>
+                            <label for="maskStart">ปิดหัว (Start):</label>
+                            <input type="number" id="maskStart" value="3" min="0" oninput="applyDataMasking()">
+                        </div>
+                        <div>
+                            <label for="maskMid">ปิดกลาง (Middle):</label>
+                            <input type="number" id="maskMid" value="2" min="0" oninput="applyDataMasking()">
+                        </div>
+                        <div>
+                            <label for="maskEnd">ปิดท้าย (End):</label>
+                            <input type="number" id="maskEnd" value="3" min="0" oninput="applyDataMasking()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Display -->
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: #f7fafc; border: 2px dashed #cbd5e0; padding: 2rem; border-radius: 12px; width: 100%; text-align: center;">
+                        <div style="font-size: 0.75rem; color: #718096; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Masked Result</div>
+                        <div id="maskResult" style="font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; font-weight: bold; color: #2d3748; word-break: break-all;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End #masking-view -->
+    </main>
+
+    <footer class="container" style="text-align: center; padding: 2rem 0;">
+        <div style="margin-bottom: 0.5rem;">
+            <a href="javascript:void(0)" id="licenseLink" style="font-size: 0.75rem; color: var(--primary); margin: 0 10px;">Licence</a>
+            <a href="javascript:void(0)" id="disclaimerLink" style="font-size: 0.75rem; color: var(--primary); margin: 0 10px;">Disclaimer</a>
+        </div>
+        <small style="color: #a0aec0;">พัฒนาโดย ETDA Standard Development Team | อ้างอิงมาตรฐาน ขมธอ.11</small>
+    </footer>
+
+    <!-- Documentation Modal -->
+    <dialog id="docModal">
+        <article style="max-width: 900px; width: 90%;">
+            <header>
+                <a href="#close" aria-label="Close" class="close" id="closeDocModal"></a>
+                <span id="modalTitle">Documentation & Guidelines</span>
+            </header>
+            <div id="readmeContent" class="markdown-body">
+                <p>กำลังโหลดข้อมูล...</p>
+            </div>
+            <footer>
+                <button class="secondary" id="closeDocModalBtn">ปิด</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

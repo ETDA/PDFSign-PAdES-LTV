@@ -1,0 +1,17 @@
+{
+    "type": "Training Certificate",
+    "organizer": {
+        "name": "สถาบันไอทีไทยดิจิทัล",
+        "website": "www.thaidigital-it.com"
+    },
+    "trainee": {
+        "name": "นางสาวสดใส วัยรุ่น",
+        "id": "TR-2026-009"
+    },
+    "course": {
+        "name": "เทคนิคการพัฒนา Hybrid PDF ตามมาตรฐาน ETDA",
+        "period": "2-3 กุมภาพันธ์ 2526",
+        "hours": 12
+    },
+    "issueDate": "2026-02-03"
+}

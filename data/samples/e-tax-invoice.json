@@ -1,0 +1,33 @@
+{
+    "type": "e-Tax Invoice",
+    "document": {
+        "number": "TINV2026001",
+        "issueDate": "2026-02-03T10:00:00Z"
+    },
+    "seller": {
+        "name": "บริษัท ดิจิทัล โซลูชั่น จำกัด",
+        "taxId": "0105560123456",
+        "branch": "00000",
+        "address": "456 ถ.สุขุมวิท กรุงเทพฯ 10110",
+        "email": "billing@digital-solution.co.th"
+    },
+    "buyer": {
+        "name": "นายสมชาย ใจดี",
+        "taxId": "1100100012345",
+        "address": "789 ถ.รัชดาภิเษก กรุงเทพฯ 10400",
+        "email": "somchai.j@gmail.com"
+    },
+    "items": [
+        {
+            "description": "ค่าสมาชิกรายปี Cloud Service",
+            "quantity": 1,
+            "unitPrice": 1200.00,
+            "amount": 1200.00
+        }
+    ],
+    "totals": {
+        "subtotal": 1200.00,
+        "vat": 84.00,
+        "grandTotal": 1284.00
+    }
+}

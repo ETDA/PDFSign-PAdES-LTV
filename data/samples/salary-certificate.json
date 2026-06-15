@@ -1,0 +1,21 @@
+{
+    "type": "Salary Certificate",
+    "company": {
+        "name": "บริษัท เทคไทย จำกัด",
+        "address": "อาคารไซเบอร์เวิลด์ ชั้น 20 ถ.รัชดาภิเษก กรุงเทพฯ",
+        "phone": "02-123-4567"
+    },
+    "employee": {
+        "name": "นายวิชัย รักงาน",
+        "position": "Senior Software Engineer",
+        "employeeId": "EMP6001",
+        "startDate": "2020-01-01"
+    },
+    "salaryDetails": {
+        "monthlyBase": 85000.00,
+        "allowance": 5000.00,
+        "totalIncome": 90000.00,
+        "currency": "THB"
+    },
+    "issueDate": "2026-02-03"
+}

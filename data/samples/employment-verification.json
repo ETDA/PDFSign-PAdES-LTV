@@ -1,0 +1,13 @@
+{
+    "type": "Employment Verification",
+    "company": {
+        "name": "บริษัท โกลบอล คอนซัลติ้ง จำกัด",
+        "authorizedSigner": "นางสาวประคอง รักษาดี"
+    },
+    "employee": {
+        "name": "นายโชคดี ทวีคูณ",
+        "position": "Manager",
+        "startDate": "2018-05-15"
+    },
+    "issueDate": "2026-02-03"
+}
